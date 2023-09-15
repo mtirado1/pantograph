@@ -49,7 +49,7 @@ function vectorMethods:rotate(angle)
 	)
 end
 
-function vectorMethods.rotateX(angle)
+function vectorMethods:rotateX(angle)
 	local cos = math.cos(angle)
 	local sin = math.sin(angle)
 	return Vector(
@@ -59,7 +59,7 @@ function vectorMethods.rotateX(angle)
 	)
 end
 
-function vectorMethods.rotateY(angle)
+function vectorMethods:rotateY(angle)
 	local cos = math.cos(angle)
 	local sin = math.sin(angle)
 	return Vector(

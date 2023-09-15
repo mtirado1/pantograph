@@ -211,6 +211,7 @@ local function animate(code, properties)
 		ORIGIN = variable:point(0, 0, 0),
 		X_AXIS = MathUtils.line(variable:point(-1, 0), variable:point(1, 0)),
 		Y_AXIS = MathUtils.line(variable:point(0, -1), variable:point(0, 1)),
+		Z_AXIS = MathUtils.line(variable:point(0, 0, -1), variable:point(0, 0, 1)),
 		degrees = function(n)
 			return n * math.pi / 180
 		end,
@@ -231,6 +232,8 @@ local function animate(code, properties)
 			ceil = variable:new(math.ceil),
 			deg = variable:new(math.deg),
 			rad = variable:new(math.rad),
+			random = math.random,
+			randomseed = math.randomseed
 		},
 		random = math.random,
 

@@ -49,6 +49,21 @@ function Canvas:transform(p)
 		return nil
 	end
 	local scale = variable.value(self.camera.scale)
+	local zAngle = variable.value(self.camera.zAngle)
+	local xAngle = variable.value(self.camera.xAngle)
+	local yAngle = variable.value(self.camera.yAngle)
+	local perspective
+	if self.camera.perspective then
+		perspective = variable.value(self.camera.perspective)
+	end
+
+	p = p:rotate(zAngle):rotateY(yAngle):rotateX(xAngle)
+
+	if perspective then
+		local k = perspective / (p.z + perspective)
+		p.x = p.x * k
+		p.y = p.y * k
+	end
 
 	return {
 		x = p.x * scale + self.width / 2,
@@ -59,6 +74,10 @@ end
 function Canvas:new(width, height, config)
 	local c = {width = width, height = height, config = config, elements = {}, elementIndex = {}}
 	c.camera = {
+		zAngle = variable:new(0),
+		xAngle = variable:new(0),
+		yAngle = variable:new(0),
+		perspective = nil,
 		scale = variable:new(50)
 	}
 	return setmetatable(c, Canvas)
