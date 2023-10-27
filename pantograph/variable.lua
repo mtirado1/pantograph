@@ -1,5 +1,5 @@
 local easing = require "pantograph.easing"
-require "vector"
+require "pantograph.vector"
 
 local Variable = {}
 Variable.__index = function(t, key)

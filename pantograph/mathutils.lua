@@ -1,6 +1,6 @@
 local variable = require "pantograph.variable"
 local textUtils = require "pantograph.textutils"
-require "vector"
+require "pantograph.vector"
 
 function kind(obj)
 	if obj.kind then

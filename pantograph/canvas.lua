@@ -1,8 +1,8 @@
 local variable = require "pantograph.variable"
 local textUtils = require "pantograph.textutils"
 require "pantograph.mathutils"
-require "svg"
-require "vector"
+require "pantograph.svg"
+require "pantograph.vector"
 
 -- Compatibility with LuaJIT
 table.unpack = table.unpack or unpack
