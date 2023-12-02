@@ -55,6 +55,10 @@ local function animate(code, properties)
 			return variable:new(value, config)
 		end,
 
+		setLayers = function(layers)
+			image:setLayers(layers)
+		end,
+
 		all = function()
 			return image.elements
 		end,
@@ -127,6 +131,12 @@ local function animate(code, properties)
 				image:add(table.unpack(elements))
 			end
 			for i, e in ipairs(elements) do
+				if elements.style then
+					e.style = elements.style
+				end
+				if elements.layer then
+					e.layer = elements.layer
+				end
 				e.drawn:set(0)
 				tweens[i] = { e.drawn, 1, time, interpolator, delay = delay}
 			end
@@ -135,12 +145,19 @@ local function animate(code, properties)
 
 		fadeIn = function(elements, time, interpolator)
 			time = time or elements.time or 1
+			local delay = elements.delay
 			interpolator = interpolator or elements.interpolator
 			local tweens = {}
 			for i, e in ipairs(elements) do
+				if elements.style then
+					e.style = elements.style
+				end
+				if elements.layer then
+					e.layer = elements.layer
+				end
 				image:add(e)
 				e.opacity:set(0)
-				tweens[i] = { e.opacity, 1, time }
+				tweens[i] = { e.opacity, 1, time, delay = delay }
 			end
 			variable:tweenAll(tweens)
 		end,
@@ -190,6 +207,11 @@ local function animate(code, properties)
 			if elements.style then
 				for i, e in ipairs(elements) do
 					e.style = elements.style
+				end
+			end
+			if elements.layer then
+				for i, e in ipairs(elements) do
+					e.layer = elements.layer
 				end
 			end
 			image:remove(table.unpack(elements))

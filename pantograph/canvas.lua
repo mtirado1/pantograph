@@ -60,7 +60,7 @@ function Canvas:transform(p)
 	p = p:rotate(zAngle):rotateY(yAngle):rotateX(xAngle)
 
 	if perspective then
-		local k = perspective / (p.z + perspective)
+		local k = perspective / (perspective - p.z)
 		p.x = p.x * k
 		p.y = p.y * k
 	end
@@ -72,15 +72,29 @@ function Canvas:transform(p)
 end
 
 function Canvas:new(width, height, config)
-	local c = {width = width, height = height, config = config, elements = {}, elementIndex = {}}
-	c.camera = {
-		zAngle = variable:new(0),
-		xAngle = variable:new(0),
-		yAngle = variable:new(0),
-		perspective = nil,
-		scale = variable:new(50)
+	local canvas = {
+		width = width,
+		height = height,
+		config = config,
+		elements = {},
+		elementIndex = {},
+		layers = nil,
+		camera = {
+			zAngle = variable:new(0),
+			xAngle = variable:new(0),
+			yAngle = variable:new(0),
+			perspective = nil,
+			scale = variable:new(50)
+		}
 	}
-	return setmetatable(c, Canvas)
+	return setmetatable(canvas, Canvas)
+end
+
+function Canvas:setLayers(layers)
+	if #layers == 0 then
+		layers = nil
+	end
+	self.layers = layers
 end
 
 function Canvas:configureElement(e)
@@ -453,10 +467,22 @@ function Canvas:render()
 		fill(self.style.background),
 	}
 
+	local layers = {}
+	for i, name in ipairs(self.layers or {}) do
+		local g = group()
+		layers[name] = g
+		c:add(g)
+	end
+
 	for i, e in ipairs(self.elements) do
 		local rendered = self:draw(e)
 		if rendered then
-			c:add(rendered)
+			local layerName = e.layer or "main"
+			if layers[layerName] then
+				layers[layerName]:add(rendered)
+			else
+				c:add(rendered)
+			end
 		end
 	end
 
