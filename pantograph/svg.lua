@@ -49,7 +49,7 @@ function Element:render()
 		if type(value) == "number" then
 			textValue = formatNumber(value)
 		end
-		s = s .. " " .. attribute .. "=\"" .. textValue .. "\""
+		s = string.format([[%s %s="%s"]], s, attribute, textValue)
 	end
 	if #self.children == 0 and not self.text then
 		return s .. "/>"
@@ -95,6 +95,15 @@ function svg(width, height)
 		canvas.children = children
 		return canvas
 	end
+end
+
+function rawSvg(x, y, content)
+	local e = Element:new("svg", {
+		x = x, y = y
+	})
+
+	e.text = { content }
+	return e
 end
 
 function line(p1, p2, attributes)

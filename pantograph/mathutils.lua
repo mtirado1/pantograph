@@ -401,3 +401,15 @@ function MathUtils.image(center, href, width, height)
 		height = height
 	})
 end
+
+local equationCounter = 0
+function MathUtils.equation(center, equation)
+	local equationSvg, width, height = generateEquation(equation)
+
+	return MathElement:new("equation", {
+		center = center,
+		width = width,
+		height = height,
+		equation = equationSvg
+	})
+end

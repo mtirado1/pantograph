@@ -20,6 +20,18 @@ local green = "#5f9e8c"
 local darkGreen = "#466a60"
 local yellow = "#ffbc7d"
 
+local colors = {
+	white = white,
+	black = black,
+	gray = gray,
+	red = red,
+	blue = blue,
+	brown = brown,
+	green = green,
+	darkGreen = darkGreen,
+	yellow = yellow,
+}
+
 Canvas.style = {
 	background = Fill(white),
 	margin = Stroke(yellow, 30),
@@ -375,6 +387,17 @@ function Canvas:draw(element)
 			width = width,
 			height = height
 		})
+	elseif k == "equation" then
+		local center, defined = resolveValues(element.center)
+		local equation = element.equation
+
+		if not defined then
+			return nil
+		end
+
+		local c = self:transform(center)
+		local eq = element.equation:gsub("rgb%(0%%,0%%,0%%%)", black)
+		svgObject = rawSvg(c.x - element.width / 2, c.y - element.height / 2, eq)
 	elseif k == "text" then
 		local center, defined = resolveValues(element.center)
 		if not defined then
@@ -417,7 +440,15 @@ function Canvas:draw(element)
 
 			local a, b = variable.value(obj.a), variable.value(obj.b)
 			local center = self:transform((a + b) / 2)
-			local angle = (b - a):azimuth()
+
+			local a_t = self:transform(a)
+			local b_t = self:transform(b)
+			-- Don't render labels if the segments are not visible
+			if math.sqrt((a_t.x - b_t.x)^2 + (a_t.y - b_t.y)^2) <= 0.1 then
+				return nil
+			end
+
+			local angle = math.atan2(a_t.y - b_t.y, b_t.x - a_t.x)
 			local x = center.x - offset * math.sin(angle)
 			local y = center.y - offset * math.cos(angle)
 
@@ -492,5 +523,6 @@ function Canvas:render()
 end
 
 return {
-	Canvas = Canvas
+	Canvas = Canvas,
+	colors = colors
 }

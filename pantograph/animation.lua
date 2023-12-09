@@ -202,6 +202,7 @@ local function animate(code, properties)
 		group = MathUtils.group,
 		composite = MathUtils.composite,
 		image = MathUtils.image,
+		equation = MathUtils.equation,
 
 		plot = function(elements)
 			if elements.style then
@@ -264,6 +265,11 @@ local function animate(code, properties)
 				print(...)
 			end
 		end,
+
+		colors = canvas.colors,
+		Fill = Fill,
+		Stroke = Stroke,
+		FillStroke = FillStroke,
 
 		ipairs = ipairs,
 		table = table,
