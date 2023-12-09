@@ -12,6 +12,12 @@ Edit `install.sh` to customize the Lua module and script installation paths, the
 * `ffmpeg`
 * `rsvg-convert`
 
+For LaTeX rendering (optional)
+
+* `pdflatex`
+* `pdfcrop`
+* `pdf2svg`
+
 ## How it works
 
 ### Video Rendering
@@ -20,13 +26,19 @@ Pantograph renders each frame as an SVG file, then it uses rsvg-convert to raste
 
 Lua does not do any of the rendering work, it merely outputs SVG and makes use of external commands to do the file format conversions and video rendering.
 
+### LateX equations
+
+Pantograph uses external commands to convert LaTeX equations to SVG. temporary files are stored in `~/.config/pantograph`
+
 ## Usage
 
-`./anim file1.lua file2.lua -o output_file.mp4`
+```
+$ pantograph file1.lua file2.lua -o output_file.mp4
+```
 
 ## Examples
 
-You can see the animatons used for the SoME3 entry in `some3/`. Note that they make heavy use of `mechanics.lua`.
+You can see the animations used for the SoME3 entry in `some3/`. Note that they make heavy use of `mechanics.lua`.
 
 ## Documentation
 
@@ -36,4 +48,3 @@ Work in Progress
 
 * Has only been used on Linux.
 * The limitations of SVG rendering libraries make complex text drawing difficult.
-* No LaTeX rendering.

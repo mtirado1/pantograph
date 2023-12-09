@@ -4,6 +4,7 @@ LUA_DIR="/usr/local/share/lua/5.3"
 INSTALL_DIR="/usr/local/bin"
 
 cp -r pantograph "$LUA_DIR"
-echo "#!/bin/sh\nlua $LUA_DIR/pantograph/main.lua \$@" > pantograph.sh
+echo "#!/bin/sh" > pantograph.sh
+echo "lua $LUA_DIR/pantograph/main.lua \$@" > pantograph.sh
 chmod +x pantograph.sh
 mv pantograph.sh "$INSTALL_DIR/pantograph"
