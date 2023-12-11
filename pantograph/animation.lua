@@ -6,7 +6,7 @@ local easing = require "pantograph.easing"
 local function animate(code, properties)
 	local config = {fps = properties.fps or 30}
 
-	local image = canvas.Canvas:new(properties.width, properties.height, config)
+	local image = canvas.Canvas:new(properties.width, properties.height)
 
 	config.update = function(frames)
 		local output = image:render()
@@ -47,6 +47,34 @@ local function animate(code, properties)
 	
 	variable.animation = config
 
+	-- Used for animating various properties
+	local animateProperty = function(property, startValue, endValue, remove)
+		return function(elements, time, interpolator)
+			time = time or elements.time or 1
+			interpolator = interpolator or elements.interpolator
+			local delay = elements.delay or 0
+			local tweens = {}
+			image:add(table.unpack(elements))
+			for i, e in ipairs(elements) do
+				if elements.style then
+					e.style = elements.style
+				end
+				if elements.layer then
+					e.layer = elements.layer
+				end
+				e[property]:set(startValue)
+				tweens[i] = { e[property], endValue, time, interpolator, delay = delay }
+				if remove then
+					tweens[i].cleanup = function() image:remove(e) end
+				end
+				if elements.step then
+					delay = delay + elements.step
+				end
+			end
+			variable:tweenAll(tweens)
+		end
+	end
+
 	local env = {
 		camera = image.camera,
 
@@ -58,7 +86,16 @@ local function animate(code, properties)
 			image:setLayers(layers)
 		end,
 
-		all = function()
+		all = function(layer)
+			if layer then
+				local filtered = {}
+				for i, element in ipairs(image.elements) do
+					if element.layer == layer then
+						table.insert(filtered, element)
+					end
+				end
+				return filtered
+			end
 			return image.elements
 		end,
 
@@ -103,77 +140,11 @@ local function animate(code, properties)
 			config.update(time * config.fps)
 		end,
 
-		erase = function(elements, time, interpolator)
-			time = time or elements.time or 1
-			interpolator = interpolator or elements.interpolator
-			local delay = elements.delay
-			local tweens = {}
-			for i, e in ipairs(elements) do
-				e.drawn:set(1)
-				tweens[i] = {
-					e.drawn, 0, time, interpolator,
-					delay = delay,
-					cleanup = function() image:remove(e) end
-				}
-			end
-			variable:tweenAll(tweens)
-		end,
+		erase = animateProperty("drawn", 1, 0, true),
+		draw = animateProperty("drawn", 0, 1),
 
-		draw = function(elements, time, interpolator)
-			time = time or elements.time or 1
-			interpolator = interpolator or elements.interpolator
-			local delay = elements.delay
-			local tweens = {}
-			if elements.back then
-				image:addBack(table.unpack(elements))
-			else
-				image:add(table.unpack(elements))
-			end
-			for i, e in ipairs(elements) do
-				if elements.style then
-					e.style = elements.style
-				end
-				if elements.layer then
-					e.layer = elements.layer
-				end
-				e.drawn:set(0)
-				tweens[i] = { e.drawn, 1, time, interpolator, delay = delay}
-			end
-			variable:tweenAll(tweens)
-		end,
-
-		fadeIn = function(elements, time, interpolator)
-			time = time or elements.time or 1
-			local delay = elements.delay
-			interpolator = interpolator or elements.interpolator
-			local tweens = {}
-			for i, e in ipairs(elements) do
-				if elements.style then
-					e.style = elements.style
-				end
-				if elements.layer then
-					e.layer = elements.layer
-				end
-				image:add(e)
-				e.opacity:set(0)
-				tweens[i] = { e.opacity, 1, time, delay = delay }
-			end
-			variable:tweenAll(tweens)
-		end,
-
-		fadeOut = function(elements, time, interpolator)
-			time = time or elements.time or 1
-			local delay = elements.delay
-			interpolator = interpolator or elements.interpolator
-			local tweens = {}
-			for i, e in ipairs(elements) do
-				if variable.value(e.opacity) == 0 then
-					e.opacity:set(1)
-				end
-				tweens[i] = { e.opacity, 0, time, cleanup = function() image:remove(e) end , delay = delay}
-			end
-			variable:tweenAll(tweens)
-		end,
+		fadeIn = animateProperty("opacity", 0, 1),
+		fadeOut = animateProperty("opacity", 1, 0, true),
 
 		len = MathUtils.len,
 		intersect = MathUtils.intersect,
@@ -215,11 +186,7 @@ local function animate(code, properties)
 				end
 			end
 			image:remove(table.unpack(elements))
-			if elements.back then
-				image:addBack(table.unpack(elements))
-			else
-				image:add(table.unpack(elements))
-			end
+			image:add(table.unpack(elements))
 
 			return elements
 		end,

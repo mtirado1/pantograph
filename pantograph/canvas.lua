@@ -83,11 +83,10 @@ function Canvas:transform(p)
 	}
 end
 
-function Canvas:new(width, height, config)
+function Canvas:new(width, height)
 	local canvas = {
 		width = width,
 		height = height,
-		config = config,
 		elements = {},
 		elementIndex = {},
 		layers = nil,
@@ -132,18 +131,6 @@ function Canvas:add(...)
 			table.insert(self.elements, e)
 		end
 	end
-end
-
-function Canvas:addBack(...)
-	local newElements = {...}
-	for i, e in ipairs(newElements) do
-		self:configureElement(e)
-		self.elementIndex[e] = true
-	end
-	for i, e in ipairs(self.elements) do
-		table.insert(newElements, e)
-	end
-	self.elements = newElements
 end
 
 function Canvas:remove(...)

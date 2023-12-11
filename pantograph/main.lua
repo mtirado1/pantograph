@@ -1,8 +1,9 @@
 local animate = require "pantograph.animation"
 require "pantograph.utils"
 
-local flags = parseFlags(arg, {"render", "help"}, {o = "output", h = "help"})
+VERSION = "0.1"
 
+local flags = parseFlags(arg, {"render", "help", "version"}, {o = "output", h = "help", v = "version"})
 local properties = {
 	fps = tonumber(flags.fps) or 30,
 	scale = tonumber(flags.scale) or 2,
@@ -10,20 +11,20 @@ local properties = {
 	height = tonumber(flags.height) or 540,
 }
 
-if flags.help then
-	io.write [[
+if flags.version then
+	print(string.format("Pantograph %s", VERSION))
+elseif flags.help then
+	print [[
 Pantograph - Programmatic SVG and animation engine
   Usage:
   pantograph [options] files
 
   Options:
     --fps       Frames per second
-	--scale     Canvas scale
-	--width     Canvas width
-	--height    Canvas height
-	--output    Output file
-]]
-	os.exit()
+    --scale     Canvas scale
+    --width     Canvas width
+    --height    Canvas height
+    --output    Output file]]
 elseif flags.render then
 	for i, filename in ipairs(flags) do
 		local f = io.open(filename)
