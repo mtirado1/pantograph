@@ -1,4 +1,3 @@
-require "vector"
 require "pantograph.mathutils"
 local variable = require "pantograph.variable"
 local canvas = require "pantograph.canvas"
