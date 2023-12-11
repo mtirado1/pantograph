@@ -41,7 +41,7 @@ $ pantograph file1.lua file2.lua -o output_file.mp4
 
 ## Examples
 
-You can see the animations used for the SoME3 entry in the [some3 branch](tree/some3).
+You can see the animations used for the SoME3 entry in the **some3** branch.
 Note that they make heavy use of `mechanics.lua`.
 
 ## Documentation
