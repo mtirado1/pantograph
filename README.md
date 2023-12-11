@@ -22,13 +22,16 @@ For LaTeX rendering (optional)
 
 ### Video Rendering
 
-Pantograph renders each frame as an SVG file, then it uses rsvg-convert to rasterize them, piping them to ffmpeg, generating an video file.
+Pantograph renders each frame as an SVG file, then it uses rsvg-convert to
+rasterize them, piping them to ffmpeg, generating an video file.
 
-Lua does not do any of the rendering work, it merely outputs SVG and makes use of external commands to do the file format conversions and video rendering.
+Lua does not do any of the rendering work, it merely outputs SVG and makes use
+of external commands to do the file format conversions and video rendering.
 
 ### LateX equations
 
-Pantograph uses external commands to convert LaTeX equations to SVG. temporary files are stored in `~/.config/pantograph`
+Pantograph uses external commands to convert LaTeX equations to SVG. temporary
+files are stored in `~/.config/pantograph`
 
 ## Usage
 
@@ -38,7 +41,8 @@ $ pantograph file1.lua file2.lua -o output_file.mp4
 
 ## Examples
 
-You can see the animations used for the SoME3 entry in `some3/`. Note that they make heavy use of `mechanics.lua`.
+You can see the animations used for the SoME3 entry in the [some3 branch](tree/some3).
+Note that they make heavy use of `mechanics.lua`.
 
 ## Documentation
 
