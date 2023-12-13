@@ -34,7 +34,6 @@ local colors = {
 
 Canvas.style = {
 	background = Fill(white),
-	margin = Stroke(yellow, 30),
 	point = { fill = green, radius = 5},
 	largePoint = { fill = darkGreen, radius = 7 },
 	line = Stroke(brown, 3),
@@ -503,8 +502,6 @@ function Canvas:render()
 			end
 		end
 	end
-
-	c:add(fill(self.style.margin))
 
 	return c:render()
 end

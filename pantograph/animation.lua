@@ -62,10 +62,12 @@ local function animate(code, properties)
 				if elements.layer then
 					e.layer = elements.layer
 				end
-				e[property]:set(startValue)
 				tweens[i] = { e[property], endValue, time, interpolator, delay = delay }
 				if remove then
 					tweens[i].cleanup = function() image:remove(e) end
+					tweens[i].startValue = startValue
+				else
+					e[property]:set(startValue)
 				end
 				if elements.step then
 					delay = delay + elements.step

@@ -103,7 +103,7 @@ function Variable:tweenAll(tweens)
 		end
 		tweenData[i] = {
 			var = tween[1],
-			oldValue = tween[1]:eval(),
+			oldValue = tween.startValue or tween[1]:eval(),
 			newValue = value(tween[2]),
 			frames = tween[3] * fps,
 			interpolator = tween[4] or easing.EaseInOut,
