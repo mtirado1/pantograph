@@ -39,10 +39,22 @@ files are stored in `~/.config/pantograph`
 $ pantograph file1.lua file2.lua -o output_file.mp4
 ```
 
+The flags `---width`, `--height` and `--scale` can be used to set the size of the animation.
+
+For example, the following set of options will render SVG frames with a size ox 800x600 but generate a video with a resolution of 1600x1200
+
+```
+$ pantograph animation.lua --width 800 --height 600 --scale 2 -o render.mp4
+```
+
+Frames per second can be adjusted with the `--fps` flag.
+
 ## Examples
 
-You can see the animations used for the SoME3 entry in the **some3** branch.
-Note that they make heavy use of `mechanics.lua`.
+The [examples](examples) folder contains a set of scripts and their respective animations.
+
+You can see the animations used for the SoME3 entry in the now outdated
+**some3** branch. Note that they make heavy use of `mechanics.lua`.
 
 ## Documentation
 
