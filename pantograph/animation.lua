@@ -88,6 +88,10 @@ local function animate(code, properties)
 			image:setLayers(layers)
 		end,
 
+		setStyle = function(style)
+			image.style = style
+		end,
+
 		all = function(layer)
 			if layer then
 				local filtered = {}
@@ -238,6 +242,7 @@ local function animate(code, properties)
 		Fill = Fill,
 		Stroke = Stroke,
 		FillStroke = FillStroke,
+		Font = Font,
 
 		ipairs = ipairs,
 		table = table,
