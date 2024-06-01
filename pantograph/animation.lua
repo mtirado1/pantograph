@@ -9,36 +9,7 @@ local function animate(code, properties)
 	local image = canvas.Canvas:new(properties.width, properties.height)
 
 	config.update = function(frames)
-		local output = image:render()
-		frames = frames or 1
-		for i = 1, frames or 1 do
-			local cmd = "rsvg-convert"
-			if properties.scale then
-				cmd = string.format("rsvg-convert --width %d", properties.scale * properties.width)
-			end
-			local f = io.popen(cmd, "w")
-			f:write(output)
-			f:flush()
-			f:close()
-		end
-	end
-
-	config.frame = function(name)
-		if name then
-			local f = io.open(name, "w")
-			f:write(image:render())
-			f:close()
-			return
-		end
-		print(image:render())
-	end
-
-	if properties.testMode then
-		config.update = function()
-			local s = image:render()
-		end
-
-		config.frame = config.update
+		properties.update(image, frames or 1)
 	end
 
 	-- This is it, the environment that hides all
@@ -205,7 +176,7 @@ local function animate(code, properties)
 			image:remove(table.unpack(elements))
 		end,
 
-		frame = config.frame,
+		frame = properties.frame,
 
 		ORIGIN = variable:point(0, 0, 0),
 		X_AXIS = MathUtils.line(variable:point(-1, 0), variable:point(1, 0)),
@@ -236,11 +207,7 @@ local function animate(code, properties)
 		},
 		random = math.random,
 
-		print = function(...)
-			if properties.testMode then
-				print(...)
-			end
-		end,
+		print = properties.print,
 
 		colors = canvas.colors,
 		Fill = Fill,

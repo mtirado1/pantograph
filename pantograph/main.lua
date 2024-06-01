@@ -29,6 +29,30 @@ elseif flags.render then
 	for i, filename in ipairs(flags) do
 		local f = io.open(filename)
 		local content = f:read("*a")
+
+		properties.update = function(image, frames)
+			local output = image:render()
+			for i = 1, frames do
+				local cmd = string.format("rsvg-convert --width %d", properties.scale * properties.width)
+				local f = io.popen(cmd, "w")
+				f:write(output)
+				f:flush()
+				f:close()
+			end
+		end
+
+		properties.frame = function(image, name)
+			if name then
+				local f = io.open(name, "w")
+				f:write(image:render())
+				f:close()
+				return
+			end
+			print(image:render())
+		end
+
+		properties.print = function() end
+
 		animate(content, properties)
 	end
 else
@@ -48,7 +72,14 @@ else
 		end
 		local content = f:read("*a")
 		properties.title = filename
-		properties.testMode = true
+
+		properties.update = function(image)
+			local s = image:render()
+		end
+
+		properties.frame = properties.update
+		properties.print = print
+
 		animate(content, properties)
 		print("Done")
 	end
