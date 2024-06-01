@@ -81,7 +81,11 @@ local function animate(code, properties)
 		camera = image.camera,
 
 		var = function(value)
-			return variable:new(value, config)
+			return variable:new(variable.value(value))
+		end,
+
+		varFunc = function(func, ...)
+			return variable:newFunc(func, ...)
 		end,
 
 		setLayers = function(layers)

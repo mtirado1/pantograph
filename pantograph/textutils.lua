@@ -14,6 +14,7 @@ local TextReplacements = {
 	theta = "θ",
 	sigma = "σ", Sigma = "Σ",
 	deg = "°",
+	approx = "≈",
 	neq = "≠",
 	geq = "≥",
 	leq = "≤",

@@ -1,5 +1,7 @@
 # Pantograph
 
+![Banner GIF](examples/banner.gif)
+
 Pantograph is a Lua DSL and command line tool for generating programmatic animations. It was developed for *The Mathematics of Kinematic Chains*, entry for the 2023 Summer of Math Exposition (SoME3).
 
 ## Installation
