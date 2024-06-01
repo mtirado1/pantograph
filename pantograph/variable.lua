@@ -127,7 +127,7 @@ function Variable:tweenAll(tweens)
 				tween.cleanup()
 			end
 		end
-		self.animation.update()
+		self.animation.update(1)
 	end
 end
 
@@ -152,7 +152,7 @@ function Variable:tween(newValue, time, interpolator)
 	for i = 1, frames do
 		t = f(i / frames)
 		self:set(easing.lerp(oldValue, newValue, t))
-		self.animation.update()
+		self.animation.update(1)
 	end
 end
 
@@ -195,7 +195,9 @@ end
 
 function Variable:eval()
 	if self.func then
-		if not self.updated then
+		if #self.funcValues == 0 then
+			return value(self.func())
+		elseif not self.updated then
 			local resolved = resolveValues(self.funcValues)
 			if not resolved then
 				return nil
