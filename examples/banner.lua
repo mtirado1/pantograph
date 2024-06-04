@@ -31,7 +31,7 @@ for i = 1, monteCarlo.N do
 		monteCarlo.inside[i] = true
 	end
 
-	p.opacity = varFunc(function(slider)
+	p.opacity = expr(function(slider)
 		if slider < i then
 			return 0
 		else
@@ -42,7 +42,7 @@ for i = 1, monteCarlo.N do
 	plot { p, layer = "points" }
 end
 
-monteCarlo.pi = varFunc(function(slider)
+monteCarlo.pi = expr(function(slider)
 	local n = 0
 	local items = value(math.floor(slider))
 	for i = 1, items do

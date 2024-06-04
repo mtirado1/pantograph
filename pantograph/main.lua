@@ -73,15 +73,19 @@ else
 		local content = f:read("*a")
 		properties.title = filename
 
+		local frames = 1
 		properties.update = function(image)
+			frames = frames + 1
 			local s = image:render()
 		end
 
 		properties.frame = properties.update
 		properties.print = print
 
+		local t1 = os.clock();
 		animate(content, properties)
-		print("Done")
+		local totalTime = os.clock() - t1
+		print(string.format("Finished in %.2fms. (%d fps)" , totalTime * 1000, math.floor(frames / totalTime)))
 	end
 
 	exec(

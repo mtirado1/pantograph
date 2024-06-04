@@ -315,12 +315,24 @@ function MathUtils.line(a, b)
 	return MathElement:new("line", {a = a, b = b})
 end
 
-function MathUtils.horizontal(y)
-	return MathUtils.line(variable:point(0, y), variable:point(1, y))
+function MathUtils.horizontal(center, length, offset)
+	if not length then
+		return MathUtils.line(center + Vector(-1, 0), center + Vector(1, 0))
+	elseif offset then
+		return MathUtils.segment(center + variable:point(-length/2 + offset, 0), center + variable:point(length/2 + offset, 0))
+	else
+		return MathUtils.segment(center + variable:point(-length/2, 0), center + variable:point(length/2, 0))
+	end
 end
 
-function MathUtils.vertical(x)
-	return MathUtils.line(variable:point(x, 0), variable:point(x, 1))
+function MathUtils.vertical(center, length, offset)
+	if not length then
+		return MathUtils.line(center + Vector(-1, 0), center + Vector(1, 0))
+	elseif offset then
+		return MathUtils.segment(center + variable:point(0, -length/2 + offset), center + variable:point(0, length/2 + offset))
+	else
+		return MathUtils.segment(center + variable:point(0, -length/2), center + variable:point(0, length/2))
+	end
 end
 
 function MathUtils.vector(a, b)

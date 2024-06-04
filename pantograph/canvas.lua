@@ -327,13 +327,12 @@ function Canvas:draw(element)
 		end
 
 		local style = self:renderStyle(element, "curve")
-		local N = element.nodes or 60
+		local N = element.nodes or math.max(2, math.ceil(math.abs(stop - start) * 20))
 		local points = {}
 		for i = 1, N do
 			local t = (i - 1) / (N - 1)
 			points[i] = f(start + drawn * (stop - start) * t)
 		end
-		--svgObject = path(style):curve(start, start + drawn * (stop - start), f, 30)
 		svgObject = polyline(points, style)
 	elseif k == "group" then
 		local rendered = {}

@@ -51,14 +51,24 @@ local function animate(code, properties)
 	local env = {
 		camera = image.camera,
 
+		--- Creates a variable.
+		-- @param value Initial value
 		var = function(value)
 			return variable:new(variable.value(value))
 		end,
 
-		varFunc = function(func, ...)
+		--- Creates a variable expression
+		-- The expression will be evaluated only when its dependencies change value.
+		-- If no dependencies are given, the expression is always evaluated.
+		--
+		-- @param func             Expression function, its arguments are the evaluated dependencies.
+		-- @param ...dependencies? Expression dependencies
+		expr = function(func, ...)
 			return variable:newFunc(func, ...)
 		end,
 
+		--- Sets image layers
+		-- @param layers Table containing layer names
 		setLayers = function(layers)
 			image:setLayers(layers)
 		end,
@@ -67,6 +77,8 @@ local function animate(code, properties)
 			image.style = style
 		end,
 
+		--- Returns all elements
+		-- @param layer? If given, only returns all elements in the layer
 		all = function(layer)
 			if layer then
 				local filtered = {}
@@ -80,19 +92,45 @@ local function animate(code, properties)
 			return image.elements
 		end,
 
+		--- Creates a point variable.
+		-- @param x? 0 by default
+		-- @param y? 0 by default
+		-- @param z? 0 by default
 		point = MathUtils.point,
+		-- Creates a polar point variable
+		-- @param radius? 1 by default
+		-- @param angle? 0 by default
 		polar = MathUtils.polar,
+		--- Calculates the dot product of two points
+		-- @param a
+		-- @param b
 		dot = MathUtils.dot,
+
+		--- Calculates the midpoint of a segment, line, or two points.
+		-- @param a
+		-- @param b?
 		midpoint = MathUtils.midpoint,
 		azimuth = MathUtils.azimuth,
 		lerp = MathUtils.lerp,
 
+		--- Evaluates a variable
+		--  @param x  Variable to evaluate. If x is not a variable, returns x.
 		value = function(x)
 			return variable.value(x)
 		end,
 
+		--- Easing functions
+		--
+		-- @type table
+		-- @param Linear
+		-- @param EaseIn
+		-- @param EaseOut
+		-- @param EaseInOut
 		easing = easing,
 
+		--- Assigns a value to a variable
+		--  @param var      Variable
+		--  @param newValue New value
 		set = function(var, newValue)
 			var:set(newValue)
 		end,
@@ -109,37 +147,122 @@ local function animate(code, properties)
 			end
 		end,
 
+		--- Tweens a variable.
+		-- @param var            Variable to tween
+		-- @param newValue       New value
+		-- @param time           Animation time
+		-- @param interpolator?  Interpolating function (`EaseInOut` by default)
 		tween = function(var, newValue, time, interpolator)
 			var:tween(newValue, time, interpolator)
 		end,
 
+		--- Tweens multiple variables
+		-- @param tweens List of tweens
 		tweenAll = function(tweens)
 			variable:tweenAll(tweens)
 		end,
 
+		--- Pauses the animation.
+		-- @param time Pause time in seconds
 		pause = function(time)
 			config.update(time * config.fps)
 		end,
 
+		--- Erases and removes elements from the screen
+		-- Works by tweening the `drawn` property of each element
+		-- @type tableFunction
+		-- @param ...elements    Elements to draw
+		-- @param time?          Animation time. 1 second by default
+		-- @param interpolator?  Interpolator function. EaseInOut by default
+		-- @param delay?         Animation delay. 0 seconds by default
+		-- @param style?         Style to assign to all elements
+		-- @param layer?         Layer where the elements will be added
 		erase = animateProperty("drawn", 1, 0, true),
+		--- Draws elements on the screen
+		-- Works by tweening the `drawn` property of each element
+		-- @type tableFunction
+		-- @param ...elements    Elements to draw
+		-- @param time?          Animation time. 1 second by default
+		-- @param interpolator?  Interpolator function. EaseInOut by default
+		-- @param delay?         Animation delay. 0 seconds by default
+		-- @param style?         Style to assign to all elements
+		-- @param layer?         Layer where the elements will be added
 		draw = animateProperty("drawn", 0, 1),
 
+		--- Fades in elements on the screen
+		-- Works by tweening the `opacity` property of each element
+		-- @type tableFunction
+		-- @param ...elements    Elements to draw
+		-- @param time?          Animation time. 1 second by default
+		-- @param interpolator?  Interpolator function. EaseInOut by default
+		-- @param delay?         Animation delay. 0 seconds by default
+		-- @param style?         Style to assign to all elements
+		-- @param layer?         Layer where the elements will be added
 		fadeIn = animateProperty("opacity", 0, 1),
+		--- Fades out elements from the screen
+		-- Works by tweening the `opacity` property of each element
+		-- @type tableFunction
+		-- @param ...elements    Elements to draw
+		-- @param time?          Animation time. 1 second by default
+		-- @param interpolator?  Interpolator function. EaseInOut by default
+		-- @param delay?         Animation delay. 0 seconds by default
+		-- @param style?         Style to assign to all elements
+		-- @param layer?         Layer where the elements will be added
 		fadeOut = animateProperty("opacity", 1, 0, true),
 
 		len = MathUtils.len,
+		--- Calculates intersections between lines, segments, and/or circles
+		--  Returns variables that evaluate to the intersection points.
+		-- @param a Line, segment or circle object
+		-- @param b Line, segment or circle object
 		intersect = MathUtils.intersect,
 		tangent = MathUtils.tangent,
 
+		--- Creates a line segment
+		-- @param a First point
+		-- @param b Second point
 		segment = MathUtils.segment,
+		--- Creates a vector
+		-- Vectors behave as segments but are drawn with an arrow.
+		-- @param a First point
+		-- @param b? Second point
 		vector = MathUtils.vector,
+		--- Creates a line
+		-- @param a First point
+		-- @param b Second point
 		line = MathUtils.line,
+		-- Draws a horizontal line
+		-- If `length` is given, it draws a segment instead.
+		--
+		-- @param center
+		-- @param length?
+		-- @param offset?
 		horizontal = MathUtils.horizontal,
+		-- Draws a vertical line
+		-- If `length` is given, it draws a segment instead.
+		--
+		-- @param center
+		-- @param length?
+		-- @param offset?
 		vertical = MathUtils.vertical,
 		bisect = MathUtils.bisect,
 		perpendicular = MathUtils.perpendicular,
+
+		--- Creates a circle with a center and radius, or passing through a given point
+		--  @param center
+		--  @param radius  Can be a number or a point
 		circle = MathUtils.circle,
 		angle = MathUtils.angle,
+
+		--- Creates a curve.
+		-- The curve is a line with `N` points from `curve(start)` to `curve(stop)`
+		--
+		-- If `curve(t)` returns a number, it will be drawn as a function. *x = t, y = curve(t)*
+		--
+		-- @param curve Curve function.
+		-- @param start Initial *t*
+		-- @param stop  Final *t*
+		-- @param N?    Number of points. Will use `abs(final - stop) * 20` by default
 		curve = MathUtils.curve,
 		text = MathUtils.text,
 		title = function(...)
@@ -148,13 +271,22 @@ local function animate(code, properties)
 			return t
 		end,
 		label = MathUtils.label,
+		--- Creates a polygon
+		-- @param points Table containing polygon vertices
 		polygon = MathUtils.polygon,
+		--- Creates a polyline
+		-- @param points Table containing polyline corners
 		polyline = MathUtils.polyline,
 		group = MathUtils.group,
 		composite = MathUtils.composite,
 		image = MathUtils.image,
 		equation = MathUtils.equation,
 
+		--- Adds elements to the screen
+		-- @type tableFunction
+		-- @param ...elements Elements to add
+		-- @param style?      Style to assign to all elements
+		-- @param layer?      Layer where the elements will be added
 		plot = function(elements)
 			if elements.style then
 				for i, e in ipairs(elements) do
@@ -172,6 +304,8 @@ local function animate(code, properties)
 			return elements
 		end,
 
+		--- Removes elements from the screen
+		-- @param elements Table containing the elements to remove
 		remove = function(elements)
 			image:remove(table.unpack(elements))
 		end,
