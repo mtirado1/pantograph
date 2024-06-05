@@ -85,7 +85,7 @@ function vectorMethods.__mul(a, b)
 	elseif type(b) == "number" then
 		return a:scale(b)
 	else
-		return nil
+		error("Cannot multiply vector.")
 	end
 end
 
@@ -93,7 +93,7 @@ function vectorMethods.__div(a, b)
 	if type(b) == "number" then
 		return a:scale(1/b)
 	else
-		return nil
+		error("Cannot divide vector.")
 	end
 end
 
@@ -102,7 +102,7 @@ function vectorMethods.__add(a, b)
 	and getmetatable(b) == vectorMethods then
 		return a:add(b)
 	else
-		return nil
+		error("Cannot add vector.")
 	end
 end
 
@@ -115,7 +115,7 @@ function vectorMethods.__sub(a, b)
 	and getmetatable(b) == vectorMethods then
 		return a:add(-b)
 	else
-		return nil
+		error("Cannot subtract vector.")
 	end
 end
 

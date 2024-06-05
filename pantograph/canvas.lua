@@ -171,7 +171,7 @@ end
 
 function Canvas:drawPolyline(element, isPolygon)
 	local drawn = variable.value(element.drawn)
-	local points = element.points
+	local points = variable.value(element.points)
 	
 	local P, p = perimeter(points, isPolygon and #points or (#points - 1)), 0
 	local lastPoint, lastSegment
@@ -195,9 +195,9 @@ function Canvas:drawPolyline(element, isPolygon)
 	end
 	local mid
 	if lastPoint == #points then
-		mid = points[lastPoint]:eval() + tSegment * (points[1]:eval() - points[lastPoint]:eval())
+		mid = variable.value(points[lastPoint]) + tSegment * (variable.value(points[1]) - variable.value(points[lastPoint]))
 	else
-		mid = points[lastPoint]:eval() + tSegment * (points[lastPoint + 1]:eval() - points[lastPoint]:eval())
+		mid = variable.value(points[lastPoint]) + tSegment * (variable.value(points[lastPoint + 1]) - variable.value(points[lastPoint]))
 	end
 	table.insert(transformed, self:transform(mid))
 	return polyline(transformed, self:renderStyle(element, "line"))
@@ -267,7 +267,8 @@ function Canvas:draw(element)
 		local transformed = {}
 		local drawn = variable.value(element.drawn)
 		if drawn == 1 then
-			for i, point in ipairs(element.points) do
+			local points = variable.value(element.points)
+			for i, point in ipairs(points) do
 				transformed[i] = self:transform(point)
 			end
 			svgObject = polygon(transformed, self:renderStyle(element, "line"))

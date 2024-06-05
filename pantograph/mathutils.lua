@@ -388,11 +388,19 @@ function MathUtils.label(element, content, ...)
 end
 
 function MathUtils.polyline(...)
-	return MathElement:new("polyline", {points = {...}})
+	local points = {...}
+	if #points == 1 then
+		points = points[1]
+	end
+	return MathElement:new("polyline", {points = points})
 end
 
 function MathUtils.polygon(...)
-	return MathElement:new("polygon", {points = {...}})
+	local points = {...}
+	if #points == 1 then
+		points = points[1]
+	end
+	return MathElement:new("polygon", {points = points})
 end
 
 function MathUtils.group(elements)
