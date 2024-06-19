@@ -76,8 +76,8 @@ end
 -- truncates to precision if required
 local function formatNumber(n, precision)
 	local s = tostring(n)
-	if math.tointeger(n) then
-		return tostring(math.tointeger(n))
+	if math.floor(n) == n then
+		return tostring(n)
 	else
 		local decimals = s:match("%.(%d+)$")
 		return string.format("%." .. precision .. "f", n)
