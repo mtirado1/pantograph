@@ -1,5 +1,5 @@
 local variable = require "pantograph.variable"
-local textUtils = require "pantograph.textutils"
+local text = require "pantograph.textutils"
 require "pantograph.vector"
 
 function kind(obj)
@@ -375,14 +375,14 @@ function MathUtils.curve(curve, start, stop, n)
 end
 
 function MathUtils.text(center, content, ...)
-	local parsed = textUtils.parseLines(content, {...})
+	local parsed = text.parse(content, {...})
 	return MathElement:new("text", {center = center, text = parsed})
 end
 
 function MathUtils.label(element, content, ...)
 	local text = nil
 	if content then
-		text = textUtils.parseLines(content, {...})
+		text = text.parse(content, {...})
 	end
 	return MathElement:new("label", {obj = element, text = text})
 end
@@ -422,14 +422,9 @@ function MathUtils.image(center, href, width, height)
 	})
 end
 
-local equationCounter = 0
 function MathUtils.equation(center, equation)
-	local equationSvg, width, height = generateEquation(equation)
-
 	return MathElement:new("equation", {
 		center = center,
-		width = width,
-		height = height,
-		equation = equationSvg
+		equation = equation
 	})
 end

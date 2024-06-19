@@ -22,18 +22,8 @@ local TextReplacements = {
 	dot = "·",
 	["("] = "[",
 	[")"] = "]",
-	["()"] = function(x) return "[" .. tostring(tspan(Text.eval(x)))  .. "]" end,
-	["sqrt"] = function(x) return "√(" ..  tostring(tspan(Text.eval(x))) .. ")" end,
-	["_"] = function(x) return tspan(Text.eval(x), {["font-size"] = "75%", ["baseline-shift"] = "sub"}) end,
-	["^"] = function(x) return tspan(Text.eval(x), {["font-size"] = "75%", ["baseline-shift"] = "super"}) end,
-	b = function(x) return tspan(Text.eval(x), {["font-weight"] = "bold"}) end,
-	bold = function(x) return tspan(Text.eval(x), {["font-weight"] = "bold"}) end,
-	i = function(x) return tspan(Text.eval(x), {["font-style"] = "italic"}) end,
-	italic = function(x) return tspan(Text.eval(x), {["font-style"] = "italic"}) end,
-	large = function(x) return tspan(Text.eval(x), {["font-size"] = "125%"}) end,
-	xlarge = function(x) return tspan(Text.eval(x), {["font-size"] = "150%"}) end,
-	xxlarge = function(x) return tspan(Text.eval(x), {["font-size"] = "200%"}) end,
-	small = function(x) return tspan(Text.eval(x), {["font-size"] = "75%"}) end,
+	["()"] = function(x) return "[" .. Text.eval(x)  .. "]" end,
+	["sqrt"] = function(x) return "√(" .. Text.eval(x) .. ")" end,
 }
 
 function Text.parse(s, params, paramCount)
@@ -124,49 +114,6 @@ function Text.eval(components)
 	end
 
 	return result
-end
-
-function Text.parseLines(lines, params)
-	if type(lines) == "string" then
-		lines = { lines }
-	else
-		lines.align = lines.align or "start"
-	end
-
-	local paramCount = 1
-	local parsedLines = { align = lines.align, height = lines.height }
-
-	for i, line in ipairs(lines) do
-		local parsed
-		parsed, paramCount = Text.parse(line, params, paramCount)
-		table.insert(parsedLines, parsed)
-	end
-
-	return parsedLines
-end
-
-function Text.render(x, y, parsedLines, style)
-	local content = {}
-
-	for i, line in ipairs(parsedLines) do
-		table.insert(content, tspan(Text.eval(line), {
-			x = x,
-			y = y
-		}))
-		y = y + style["font-size"] * (parsedLines.height or 1.25)
-	end
-
-	local tag = text(x, y, content, style)
-	if parsedLines.align then
-		tag:set { ["text-anchor"] = parsedLines.align }
-	end
-
-	return tag
-end
-
-function Text.run(x, y, lines, params, style)
-	local content = Text.parseLines(lines, params)
-	return Text.render(x, y, content, style)
 end
 
 return Text

@@ -7,8 +7,11 @@ local function formatNumber(n)
 	end
 end
 
-Element = {}
+local svg = {}
+
+local Element = {}
 Element.__index = Element
+svg.Element = Element
 
 function Element:new(tag, attributes, children)
 	local copy = {}
@@ -84,7 +87,7 @@ function Element.__tostring(e)
 	return e:render()
 end
 
-function svg(width, height)
+function svg.svg(width, height)
 	return function(children)
 		local canvas = Element:new("svg", {
 			xmlns = "http://www.w3.org/2000/svg",
@@ -97,7 +100,7 @@ function svg(width, height)
 	end
 end
 
-function rawSvg(x, y, content)
+function svg.rawSvg(x, y, content)
 	local e = Element:new("svg", {
 		x = x, y = y
 	})
@@ -106,7 +109,7 @@ function rawSvg(x, y, content)
 	return e
 end
 
-function line(p1, p2, attributes)
+function svg.line(p1, p2, attributes)
 	return Element:new("line", {
 		x1 = p1.x,
 		y1 = p1.y,
@@ -115,7 +118,7 @@ function line(p1, p2, attributes)
 	}):set(attributes or {})
 end
 
-function polyline(data, attr)
+function svg.polyline(data, attr)
 	local points = {}
 	local attributes = {}
 	for k, v in pairs(attr) do
@@ -132,7 +135,7 @@ function polyline(data, attr)
 	return Element:new("polyline", attributes)
 end
 
-function polygon(data, attr)
+function svg.polygon(data, attr)
 	local points = {}
 	local attributes = {}
 	for k, v in pairs(attr or {}) do
@@ -149,7 +152,7 @@ function polygon(data, attr)
 	return Element:new("polygon", attributes)
 end
 
-function rect(x, y, width, height, attributes)
+function svg.rect(x, y, width, height, attributes)
 	return Element:new("rect", {
 		x = x,
 		y = y,
@@ -158,7 +161,7 @@ function rect(x, y, width, height, attributes)
 	}):set(attributes)
 end
 
-function circle(x, y, r, attributes)
+function svg.circle(x, y, r, attributes)
 	return Element:new("circle", {
 		cx = x,
 		cy = y,
@@ -166,7 +169,7 @@ function circle(x, y, r, attributes)
 	}):set(attributes or {})
 end
 
-function ellipse(cx, cy, rx, ry, attributes)
+function svg.ellipse(cx, cy, rx, ry, attributes)
 	return Element:new("ellipse", {
 		cx = cx,
 		cy = cy,
@@ -175,35 +178,41 @@ function ellipse(cx, cy, rx, ry, attributes)
 	}):set(attributes or {})
 end
 
-function use(href, attributes)
+function svg.use(href, attributes)
 	local attributes = attributes or {}
 	attributes["xlink:href"] = href
 	return Element:new("use", attributes)
 end
 
-function defs(children)
+function svg.defs(children)
 	return Element:new("defs", {}, children)
 end
 
-function style(text)
+function svg.style(text)
 	local e = Element:new("style")
 	e.text = {"\n" .. text}
 	return e
 end
 
-function group(data)
+function svg.group(data, attributes)
 	data = data or {}
 	local children = {}
-	local attributes = {}
+	local attr = {}
 	for i, v in pairs(data) do
 		if type(i) == "number" then
 			children[i] = v
 		else
-			attributes[i] = v
+			attr[i] = v
+		end
+	end
+
+	if attributes then
+		for k, v in pairs(attributes) do
+			attr[k] = v
 		end
 	end
 	
-	return Element:new("g", attributes, children)
+	return Element:new("g", attr, children)
 end
 
 local Path = {}
@@ -424,21 +433,21 @@ function Path:curve(start, stop, curve, n, delta)
 	return self
 end
 
-function path(attributes)
+function svg.path(attributes)
 	local attr = attributes or {}
 	p = Element:new("path", attr):set{ d = attr.d or "" }
 	setmetatable(p, Path)
 	return p
 end
 
-function fill(style)
+function svg.fill(style)
 	return Element:new("rect", {
 		width = "100%",
 		height = "100%",
 	}):set(style)
 end
 
-function text(x, y, text, style)
+function svg.text(x, y, text, style)
 	local t = Element:new("text", style)
 	t:set {x = x, y = y}
 	if type(text) == "string" then
@@ -448,7 +457,7 @@ function text(x, y, text, style)
 	return t
 end
 
-function tspan(text, style)
+function svg.tspan(text, style)
 	local span = Element:new("tspan", style)
 	if type(text) == "string" then
 		text = {text}
@@ -457,7 +466,7 @@ function tspan(text, style)
 	return span
 end
 
-function Font(family, size, fill, style)
+function svg.Font(family, size, fill, style)
 	local attributes = {}
 	attributes["font-family"] = family
 	attributes["font-size"] = size
@@ -488,11 +497,11 @@ function Font(family, size, fill, style)
 	return attributes
 end
 
-function Fill(color)
+function svg.Fill(color)
 	return {fill = color, stroke = "none"}
 end
 
-function Stroke(color, width, attr)
+function svg.Stroke(color, width, attr)
 	attr = attr or {}
 	local obj = {
 		fill = "none",
@@ -507,7 +516,7 @@ function Stroke(color, width, attr)
 	return obj
 end
 
-function FillStroke(fill, stroke, width)
+function svg.FillStroke(fill, stroke, width)
 	return {
 		fill = fill,
 		stroke = stroke,
@@ -515,5 +524,4 @@ function FillStroke(fill, stroke, width)
 	}
 end
 
-function Point(x, y) return {x = x, y = y} end
-P = Point
+return svg

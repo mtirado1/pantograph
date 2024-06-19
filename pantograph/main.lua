@@ -1,4 +1,5 @@
 local animate = require "pantograph.animation"
+local renderSvg = require "pantograph.render"
 require "pantograph.utils"
 
 VERSION = "0.1"
@@ -31,7 +32,7 @@ elseif flags.render then
 		local content = f:read("*a")
 
 		properties.update = function(image, frames)
-			local output = image:render()
+			local output = renderSvg(image)
 			for i = 1, frames do
 				local cmd = string.format("rsvg-convert --width %d", properties.scale * properties.width)
 				local f = io.popen(cmd, "w")
@@ -42,13 +43,14 @@ elseif flags.render then
 		end
 
 		properties.frame = function(image, name)
+			local output = renderSvg(image)
 			if name then
 				local f = io.open(name, "w")
-				f:write(image:render())
+				f:write(output)
 				f:close()
 				return
 			end
-			print(image:render())
+			print(output)
 		end
 
 		properties.print = function() end
@@ -76,7 +78,7 @@ else
 		local frames = 1
 		properties.update = function(image)
 			frames = frames + 1
-			local s = image:render()
+			local s = renderSvg(image)
 		end
 
 		properties.frame = properties.update

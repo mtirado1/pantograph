@@ -1,7 +1,6 @@
 local variable = require "pantograph.variable"
 local textUtils = require "pantograph.textutils"
 require "pantograph.mathutils"
-require "pantograph.svg"
 require "pantograph.vector"
 
 -- Compatibility with LuaJIT
@@ -33,24 +32,24 @@ local colors = {
 }
 
 Canvas.style = {
-	background = Fill(white),
+	background = { fill = white },
 	point = { fill = green, radius = 5},
 	largePoint = { fill = darkGreen, radius = 7 },
-	line = Stroke(brown, 3),
-	grid = Stroke(yellow, 3),
-	curve = Stroke(red, 3),
-	solid = FillStroke(red, brown, 3),
-	construction = Stroke(yellow, 3, {dashArray = "6"}),
-	text = Font("Lexend", 20, black, {align = "center", baseline = "center"}),
-	title = Font("Lexend", 24, black, {align = "center", baseline = "center", weight = "bold"}),
+	line = { stroke = brown, width = 3 },
+	grid = { stroke = yellow, width = 3 },
+	curve = { stroke = red, width = 3 },
+	solid = { fill = red, stroke = brown, width = 3 },
+	construction = { stroke = yellow, width = 3, dash = { 6 } },
+	text = { font = "Lexend", size = 20, color = black, align = "center", baseline = "center" },
+	title = { font = "Lexend", size = 24, color = black, align = "center", baseline = "center", weight = "bold" },
 	textOffset = 20,
-	red = Fill(red),
-	blue = Fill(blue),
-	blueStroke = Stroke(blue, 3),
-	green = Fill(green),
-	brown = Fill(brown),
-	yellow = Fill(yellow),
-	gray = Fill(gray)
+	red = { fill = red },
+	blue = { fill = blue },
+	blueStroke = { stroke = blue, width = 3 },
+	green = { fill = green },
+	brown = { fill = brown },
+	yellow = { fill = yellow },
+	gray = { fill = gray }
 }
 
 -- Converts a point to a SVG plane, the most basic transformation before plotting
@@ -147,13 +146,21 @@ function Canvas:remove(...)
 	end
 end
 
+local function clone(o)
+	local cloned = {}
+	for k, v in pairs(o) do
+		cloned[k] = v
+	end
+	return cloned
+end
+
 function Canvas:renderStyle(element, default)
 	if type(element.style) == "string" then
-		return self.style[element.style] or self.style[default]
+		return clone(self.style[element.style] or self.style[default])
 	elseif element.style then
-		return element.style
+		return clone(element.style)
 	else
-		return self.style[default]
+		return clone(self.style[default])
 	end
 end
 
@@ -200,7 +207,22 @@ function Canvas:drawPolyline(element, isPolygon)
 		mid = variable.value(points[lastPoint]) + tSegment * (variable.value(points[lastPoint + 1]) - variable.value(points[lastPoint]))
 	end
 	table.insert(transformed, self:transform(mid))
-	return polyline(transformed, self:renderStyle(element, "line"))
+
+	return {
+		type = "line",
+		points = transformed,
+		style = self:renderStyle(element, "line")
+	}
+end
+
+function Canvas:getCurve(curve, start, stop, N)
+	local points = {}
+	for i = 1, N do
+		local t = start + (stop - start) * (i - 1) / (N - 1)
+		table.insert(points, self:transform(curve(t)))
+	end
+
+	return points
 end
 
 local function resolveValues(...)
@@ -216,7 +238,7 @@ local function resolveValues(...)
 end
 
 function Canvas:draw(element)
-	local svgObject
+	local object
 	local k = kind(element)
 	if k == "point" then
 		local drawn = variable.value(element.drawn)
@@ -224,8 +246,13 @@ function Canvas:draw(element)
 		if c == nil then return nil end
 		local style = self:renderStyle(element, "point")
 		local r = style.radius
-		style = Fill(style.fill)
-		svgObject = circle(c.x, c.y, drawn * r, style)
+
+		object = {
+			type = "circle",
+			center = c,
+			radius = drawn * r,
+			style = style
+		}
 	elseif k == "segment" then
 		local a, b, defined = resolveValues(element.a, element.b)
 		if not defined then
@@ -235,20 +262,12 @@ function Canvas:draw(element)
 		local p1 = self:transform(a)
 		local p2 = self:transform(a + drawn * (b - a))
 
-		svgObject = line(p1, p2, self:renderStyle(element, "line"))
-
-		local angle = math.deg(math.atan2(p2.y - p1.y, p2.x - p1.x))
-
-		if element.marker then
-			svgObject = group {
-				svgObject,
-				path {
-					d = "M -6 -4 V 4 L 6 0 Z",
-					transform = string.format("translate(%s,%s) rotate(%s)", p2.x, p2.y, angle),
-					fill = svgObject.attributes.stroke
-				}
-			}
-		end
+		object = {
+			type = "line",
+			points = { p1, p2 },
+			style = self:renderStyle(element, "line"),
+			pointer = element.marker
+		}
 	elseif k == "line" then
 		local a, b, defined = resolveValues(element.a, element.b)
 		if not defined then
@@ -260,9 +279,14 @@ function Canvas:draw(element)
 		b = b + delta
 		local p1 = self:transform(a)
 		local p2 = self:transform(a + drawn * (b - a))
-		svgObject = line(p1, p2, self:renderStyle(element, "line"))
+
+		object = {
+			type = "line",
+			points = { p1, p2 },
+			style = self:renderStyle(element, "line")
+		}
 	elseif k == "polyline" then
-		svgObject = self:drawPolyline(element, false)
+		object = self:drawPolyline(element, false)
 	elseif k == "polygon" then
 		local transformed = {}
 		local drawn = variable.value(element.drawn)
@@ -271,9 +295,13 @@ function Canvas:draw(element)
 			for i, point in ipairs(points) do
 				transformed[i] = self:transform(point)
 			end
-			svgObject = polygon(transformed, self:renderStyle(element, "line"))
+			object = {
+				type = "polygon",
+				points = transformed,
+				style = self:renderStyle(element, "line")
+			}
 		else
-			svgObject = self:drawPolyline(element, true)
+			object = self:drawPolyline(element, true)
 		end
 	elseif k == "circle" then
 		local center, radius, defined = resolveValues(element.center, element.radius)
@@ -285,16 +313,20 @@ function Canvas:draw(element)
 		local f
 		if type(radius) ~= "number" then
 			f = function(t)
-				return self:transform(center + (radius - center):rotate(t))
+				return center + (radius - center):rotate(t)
 			end
 		else
 			f = function(t)
-				return self:transform(center + Polar(radius, t))
+				return center + Polar(radius, t)
 			end
 		end
 
 		local style = self:renderStyle(element, "line")
-		svgObject = path(style):curve(0, drawn * 2 * math.pi, f, 12)
+		object = {
+			type = "line",
+			points = self:getCurve(f, 0, drawn * 2 * math.pi, 120),
+			style = style
+		}
 	elseif k == "angle" then
 		local a, center, angle, defined = resolveValues(element.a, element.center, element.angle)
 		if not defined then
@@ -305,11 +337,15 @@ function Canvas:draw(element)
 		local drawn = variable.value(element.drawn)
 
 		local f = function(t)
-			return self:transform(center + a_delta:rotate(t))
+			return center + a_delta:rotate(t)
 		end
 
 		local style = self:renderStyle(element, "line")
-		svgObject = path(style):curve(0, drawn * angle, f, 12)
+		object = {
+			type = "line",
+			points = self:getCurve(f, 0, drawn * angle, 120),
+			style = style
+		}
 	elseif k == "curve" then
 		local start = variable.value(element.start)
 		local stop = variable.value(element.stop)
@@ -319,71 +355,66 @@ function Canvas:draw(element)
 		local f
 		if type(variable.value(curve(start))) == "number" then
 			f = function(t)
-				return self:transform(Vector(t, variable.value(curve(t))))
+				return Vector(t, variable.value(curve(t)))
 			end
 		else
-			f = function(t)
-				return self:transform(curve(t))
-			end
+			f = curve
 		end
 
 		local style = self:renderStyle(element, "curve")
 		local N = element.nodes or math.max(2, math.ceil(math.abs(stop - start) * 20))
-		local points = {}
-		for i = 1, N do
-			local t = (i - 1) / (N - 1)
-			points[i] = f(start + drawn * (stop - start) * t)
-		end
-		svgObject = polyline(points, style)
+
+		object = {
+			type = "line",
+			points = self:getCurve(f, start, start + drawn * (stop - start), N),
+			style = style
+		}
 	elseif k == "group" then
 		local rendered = {}
 		local drawn = variable.value(element.drawn)
 		for i, subElement in ipairs(element.elements) do
 			subElement.drawn:set(drawn)
-			local svgElement = self:draw(subElement)
-			if svgElement then
-				table.insert(rendered, svgElement)
+			local object = self:draw(subElement)
+			if object then
+				table.insert(rendered, object)
 			end
 		end
-		svgObject = group(rendered)
+		object = {
+			type = "group",
+			elements = rendered
+		}
 	elseif k == "composite" then
 		local rendered = {}
 		for i, subElement in ipairs(element.elements) do
-			local svgElement = self:draw(subElement)
-			if svgElement then
-				table.insert(rendered, svgElement)
+			local object = self:draw(subElement)
+			if object then
+				table.insert(rendered, object)
 			end
 		end
-		svgObject = group(rendered)
+		object = {
+			type = "group",
+			style = {},
+			elements = rendered
+		}
 	elseif k == "image" then
-		local center, href, width, height, defined = resolveValues(element.center, element.href, element.width, element.height)
-		if not defined then
-			return nil
-		end
-
-		center = self:transform(center)
-		local scale = variable.value(self.camera.scale)
-		width = width * scale
-		height = height * scale
-
-		svgObject = Element:new("image", {
-			href = href,
-			x = center.x - width/2,
-			y = center.y - height/2,
-			width = width,
-			height = height
-		})
+		-- TODO
 	elseif k == "equation" then
 		local center, defined = resolveValues(element.center)
 		local equation = element.equation
+		local drawn = variable.value(element.drawn)
 
 		if not defined then
 			return nil
 		end
 
 		local c = self:transform(center)
-		local eq = element.equation:gsub("rgb%(0%%,0%%,0%%%)", black)
-		svgObject = rawSvg(c.x - element.width / 2, c.y - element.height / 2, eq)
+		object = {
+			type = "equation",
+			drawn = drawn,
+			color = black,
+			center = c,
+			equation = equation
+		}
 	elseif k == "text" then
 		local center, defined = resolveValues(element.center)
 		if not defined then
@@ -394,8 +425,13 @@ function Canvas:draw(element)
 		local style = self:renderStyle(element, "text")
 		local drawn = variable.value(element.drawn)
 
-		svgObject = textUtils.render(center.x, center.y, element.text, style)
-		svgObject:set { opacity = drawn }
+		object = {
+			type = "text",
+			center = center,
+			drawn = drawn,
+			text = textUtils.eval(element.text),
+			style = style
+		}
 	elseif k == "label" then
 		local obj, defined = resolveValues(element.obj)
 		if not defined then
@@ -409,15 +445,22 @@ function Canvas:draw(element)
 		if objKind == "point" then
 			local center = self:transform(obj)
 			local x, y = center.x, center.y - offset
+			local drawn = variable.value(element.drawn)
 
+			local text
 			if element.text then
-				svgObject = textUtils.render(x, y, element.text, style)
+				text = textUtils.eval(element.text)
 			else
-				svgObject = textUtils.run(x, y, "[]", { obj }, style)
+				text = textUtils.eval(textUtils.parse("[]", { obj }))
 			end
 
-			local drawn = variable.value(element.drawn)
-			svgObject:set { opacity = drawn }
+			object = {
+				type = "text",
+				center = { x = x, y = y },
+				drawn = drawn,
+				text = text,
+				style = style
+			}
 		elseif objKind == "line" or objKind == "segment" then
 			local a, b, defined = resolveValues(obj.a, obj.b)
 			if not defined then
@@ -437,16 +480,22 @@ function Canvas:draw(element)
 			local angle = math.atan2(a_t.y - b_t.y, b_t.x - a_t.x)
 			local x = center.x - offset * math.sin(angle)
 			local y = center.y - offset * math.cos(angle)
+			local drawn = variable.value(element.drawn)
 
+			local text
 			if element.text then
-				svgObject = textUtils.render(x, y, element.text, style)
+				text = textUtils.eval(element.text)
 			else
-				svgObject = textUtils.run(x, y, "[]", {(b - a):length()}, style)
+				text = textUtils.eval(textUtils.parse("[]", {(b - a):length()}))
 			end
 
-			local drawn = variable.value(element.drawn)
-			svgObject:set { opacity = drawn }
-			--svgObject:set { transform = string.format("rotate(%.2f, %.2f, %.2f)", -math.deg(angle), x, y) }
+			object = {
+				type = "text",
+				center = { x = x, y = y },
+				drawn = drawn,
+				text = text,
+				style = style
+			}
 		elseif objKind == "angle" then
 			local a, center, b, angle, defined = resolveValues(obj.a, obj.center, obj.b, obj.angle)
 			if not defined then
@@ -455,40 +504,52 @@ function Canvas:draw(element)
 
 			local midpoint = center + ((a - center):unitVector() * 0.6):rotate(angle / 2)
 			local center = self:transform(midpoint)
+			local drawn = variable.value(element.drawn)
 
-			local x, y = center.x, center.y
+			local text
 			if element.text then
-				svgObject = textUtils.render(x, y, element.text, style)
+				text = textUtils.eval(element.text)
 			else
 				local degrees = math.deg(math.abs(angle))
-				svgObject = textUtils.run(x, y, "[][deg]", { degrees }, style)
+				text = textUtils.eval(textUtils.parse("[][deg]", { degrees }))
 			end
 
-			local drawn = variable.value(element.drawn)
-			svgObject:set { opacity = drawn }
+			object = {
+				type = "text",
+				center = center,
+				text = text,
+				drawn = drawn,
+				style = style
+			}
 		else
-			error(string.format("Cannot label '%s' element."))
+			error(string.format("Cannot label '%s' element.", objKind))
 		end
 	end
 
 	local opacity = variable.value(element.opacity)
 	if opacity ~= 1 then
-		svgObject:set { opacity = opacity }
+		object.style.opacity = opacity
 	end
 
-	return svgObject
+	return object
 end
 
 function Canvas:render()
-	local c = svg(self.width, self.height) {
-		fill(self.style.background),
+	local canvas = {
+		width = self.width,
+		height = self.height
 	}
+
+	table.insert(canvas, {
+		type = "fill",
+		style = self.style.background
+	})
 
 	local layers = {}
 	for i, name in ipairs(self.layers or {}) do
-		local g = group()
+		local g = { type = "group", elements = {} }
 		layers[name] = g
-		c:add(g)
+		table.insert(canvas, g)
 	end
 
 	for i, e in ipairs(self.elements) do
@@ -496,14 +557,14 @@ function Canvas:render()
 		if rendered then
 			local layerName = e.layer or "main"
 			if layers[layerName] then
-				layers[layerName]:add(rendered)
+				table.insert(layers[layerName].elements, rendered)
 			else
-				c:add(rendered)
+				table.insert(canvas, rendered)
 			end
 		end
 	end
 
-	return c:render()
+	return canvas
 end
 
 return {

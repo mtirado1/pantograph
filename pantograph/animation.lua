@@ -9,7 +9,7 @@ local function animate(code, properties)
 	local image = canvas.Canvas:new(properties.width, properties.height)
 
 	config.update = function(frames)
-		properties.update(image, frames or 1)
+		properties.update(image:render(), frames or 1)
 	end
 
 	-- This is it, the environment that hides all
@@ -344,16 +344,45 @@ local function animate(code, properties)
 		print = properties.print,
 
 		colors = canvas.colors,
-		Fill = Fill,
-		Stroke = Stroke,
-		FillStroke = FillStroke,
-		Font = Font,
+		Fill = function(color, opacity)
+			return {
+				fill = color,
+				opacity = opacity
+			}
+		end,
+		Stroke = function(color, width, opacity)
+			return {
+				stroke = color,
+				width = width,
+				opacity = opacity
+			}
+		end,
+		FillStroke = function(fill, stroke, width, opacity)
+			return {
+				fill = fill,
+				stroke = stroke,
+				width = width,
+				opacity = opacity
+			}
+		end,
+		Font = function(family, size, color, opacity)
+			return {
+				family = family,
+				size = size,
+				color = color,
+				opacity = opacity
+			}
+		end,
 
 		ipairs = ipairs,
 		table = table,
 		pairs = pairs
 	}
 	
+	--- Loads a file containing Lua code
+	-- @name include
+	-- @type function
+	-- @param file The file to load
 	env.include = function(file)
 		local f, err = io.open(file)
 		if err then
