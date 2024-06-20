@@ -1,4 +1,4 @@
-local animate = require "pantograph.animation"
+local animate = require "pantograph"
 local renderSvg = require "pantograph.render"
 require "pantograph.utils"
 

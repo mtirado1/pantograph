@@ -11,6 +11,11 @@ local function renderStyle(style)
 		style.width = nil
 	end
 
+	if style.dash then
+		style["stroke-dasharray"] = table.concat(style.dash, " ")
+		style.dash = nil
+	end
+
 	if not style.fill then
 		style.fill = "none"
 	end
@@ -39,9 +44,32 @@ function render.circle(object)
 end
 
 function render.line(object)
-	-- TODO: object.pointer
+	local points = object.points
 	local style = renderStyle(object.style)
-	return svg.polyline(object.points, style)
+
+	if object.pointer then
+		local last = #points
+		local dx = points[last].x - points[last - 1].x
+		local dy = points[last].y - points[last - 1].y
+		local length = math.sqrt(dx*dx + dy*dy)
+		if length > 0 then
+			local scale = math.min(1, length / 12)
+			local x = points[last].x - scale * dx / length * 12
+			local y = points[last].y - scale * dy / length * 12
+			points[last] = {x = x, y = y}
+			local angle = math.deg(math.atan2(dy, dx))
+
+			return svg.group {
+				svg.polyline(points, style),
+				svg.path():set {
+					d = "M 12 0 L 0 4 L 0 -4 Z",
+					transform = string.format("translate(%.2f,%.2f)rotate(%.2f)scale(%.2f)", x, y, angle, scale),
+					fill = style.stroke
+				}
+			}
+		end
+	end
+	return svg.polyline(points, style)
 end
 
 function render.polygon(object)

@@ -12,10 +12,6 @@ local function animate(code, properties)
 		properties.update(image:render(), frames or 1)
 	end
 
-	-- This is it, the environment that hides all
-	-- the methods and metatables and packs a
-	-- vector, SVG, and math library in a neat DSL
-	
 	variable.animation = config
 
 	-- Used for animating various properties
@@ -110,6 +106,8 @@ local function animate(code, properties)
 		-- @param a
 		-- @param b?
 		midpoint = MathUtils.midpoint,
+		--- Calculates the XY polar angle of a segment, line, or point.
+		-- @param a
 		azimuth = MathUtils.azimuth,
 		lerp = MathUtils.lerp,
 
@@ -199,7 +197,7 @@ local function animate(code, properties)
 		-- @param style?         Style to assign to all elements
 		-- @param layer?         Layer where the elements will be added
 		fadeIn = animateProperty("opacity", 0, 1),
-		--- Fades out elements from the screen
+		--- Fades out and removes elements from the screen
 		-- Works by tweening the `opacity` property of each element
 		-- @type tableFunction
 		-- @param ...elements    Elements to draw
@@ -210,6 +208,8 @@ local function animate(code, properties)
 		-- @param layer?         Layer where the elements will be added
 		fadeOut = animateProperty("opacity", 1, 0, true),
 
+		-- Calculates the length of a line, segment, or point
+		-- @param a Object
 		len = MathUtils.len,
 		--- Calculates intersections between lines, segments, and/or circles
 		--  Returns variables that evaluate to the intersection points.
@@ -270,6 +270,10 @@ local function animate(code, properties)
 			t.style = "title"
 			return t
 		end,
+		--- Creates a label for an object
+		-- @param object The object to label
+		-- @param content? Contents of the label
+		-- @param ...arguments? Label arguments
 		label = MathUtils.label,
 		--- Creates a polygon
 		-- @param points Table containing polygon vertices
@@ -277,6 +281,8 @@ local function animate(code, properties)
 		--- Creates a polyline
 		-- @param points Table containing polyline corners
 		polyline = MathUtils.polyline,
+		--- Creates a group of objects
+		-- @param elements Table containing group elements
 		group = MathUtils.group,
 		composite = MathUtils.composite,
 		image = MathUtils.image,
